@@ -808,8 +808,8 @@ Rover/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/Rover.git
-cd Rover
+git clone https://github.com/shouryasingh2311/ARGUS-Mine-Rescue-Rover.git
+cd ARGUS-Mine-Rescue-Rover
 
 # 2. Create Python virtual environment
 python -m venv .venv

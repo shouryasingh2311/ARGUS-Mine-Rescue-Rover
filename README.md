@@ -82,8 +82,8 @@ The tactical Command & Control (C2) dashboard renders a zero-scroll, military-st
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Rover.git
-cd Rover
+git clone https://github.com/shouryasingh2311/ARGUS-Mine-Rescue-Rover.git
+cd ARGUS-Mine-Rescue-Rover
 
 # Python environment (for YOLO pipeline)
 python -m venv .venv
