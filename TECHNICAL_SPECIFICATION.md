@@ -655,7 +655,19 @@ while cap.isOpened():
 
 ### 6.4 Tactical HUD Dashboard
 
-The surface C2 dashboard (`index.html`) is a zero-scroll, single-screen, dark industrial tactical interface rendering:
+The surface C2 dashboard (`index.html`) is a zero-scroll, single-screen, dark industrial tactical interface rendering real-time telemetry, spatial multi-gas plume dispersion, and edge computer vision:
+
+<div align="center">
+  <img src="images/c2_dashboard_overview.png" alt="ARGUS Tactical Command & Control Center" width="100%" />
+  <p><em>Figure 6.1: ARGUS C2 Command Center HUD — Spatial Gas Heatmap (Sector A1 Collapsed Wing), MPU-6050 Stability Horizon, Acoustic FFT Spectrum, and Environmental Sensor Hub.</em></p>
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="images/c2_miner_detection.png" alt="YOLO Edge AI Trapped Miner Detection" width="100%" />
+  <p><em>Figure 6.2: Real-Time Edge Vision Pipeline — YOLO inference detecting trapped miner with safety helmet, high-visibility reflective vest, and survivor thermal locator tracking at 2.6m range.</em></p>
+</div>
 
 | Panel | Visualization | Data Source |
 |---|---|---|

@@ -58,16 +58,28 @@ ARGUS is a **tracked rover** built for subterranean coal mine reconnaissance. It
 
 ---
 
-## 🖥️ Dashboard Preview
+## 🖥️ Tactical C2 Dashboard Preview
+
+<div align="center">
+  <img src="images/c2_dashboard_overview.png" alt="ARGUS Tactical Command & Control Center" width="100%" />
+  <p><em>Figure 1: ARGUS C2 Tactical Command Center — Live Spatial Gas Heatmap (CH₄ / CO / CO₂ plumes), MPU-6050 Horizon Dials, Acoustic FFT, and Real-Time Environmental Telemetry.</em></p>
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="images/c2_miner_detection.png" alt="YOLOv8 Edge AI Person & Equipment Detection" width="100%" />
+  <p><em>Figure 2: Edge AI Detection Pipeline — Custom YOLO model identifying miner in zero-visibility gallery with hardhat (HELMET), high-visibility safety vest (REFLECTIVE), and thermal locator signature at 2.6m.</em></p>
+</div>
 
 The tactical Command & Control (C2) dashboard renders a zero-scroll, military-style HUD:
 
-- **Live YOLO-annotated video feed** with bounding boxes and distance tags
-- **Spatial gas dispersion heatmap** (CH₄ / CO / CO₂ plumes on a blueprint floorplan)
-- **FFT acoustic visualizer** (turns red on SOS knock detection)
-- **Cockpit pitch & roll dials** (MPU-6050 gyroscope)
-- **Environmental sensor grid** (O₂%, CO, Temperature, Humidity)
-- **Real-time alarm system** (CO threshold, methane LEL, water ingress, tremor)
+- **Live YOLO-annotated video feed** with bounding boxes, PPE classification, and distance tags
+- **Spatial gas dispersion heatmap** (CH₄ / CO / CO₂ plumes rendered over underground sector floorplan)
+- **FFT acoustic visualizer** (real-time frequency spectrum; flashes red on 3-3-3 SOS knock cadence)
+- **Cockpit pitch & roll dials** (MPU-6050 gyroscope with seismic tremor tracking)
+- **Environmental sensor grid** (O₂ displacement, CO ppm, Ambient Temperature, Humidity)
+- **Real-time multi-hazard alarms** (OSHA PEL thresholds, methane LEL warnings, water ingress, chassis rollover)
 
 ---
 
