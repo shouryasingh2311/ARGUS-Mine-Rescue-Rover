@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>RESCUE ROVER // MOBILE TELEMETRY OVERRIDE</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            tacticalBg: '#0A0B0E',
+            panelBg: '#12151B',
+            panelBorder: '#1C222D',
+            amberAccent: '#FF9800',
+            emergencyRed: '#F44336',
+            cyanReadout: '#00E5FF',
+            neonGreen: '#00E676',
+            textDim: '#707E94',
+            textLight: '#E1E7EF',
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'monospace'],
+            hud: ['Orbitron', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <style>
+    /* Mobile Touch Sliders Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      background: #18202C;
+      border-radius: 4px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #00E5FF;
+      cursor: pointer;
+      border: 2px solid #0A0B0E;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+    }
+    input[type=range]:active::-webkit-slider-thumb {
+      background: #FF9800;
+      box-shadow: 0 0 12px rgba(255, 152, 0, 0.8);
+    }
+  </style>
+</head>
+
+<body class="bg-[#0A0B0E] text-[#E1E7EF] min-h-screen flex flex-col font-display antialiased selection:bg-amber-500 selection:text-black p-3 pb-12">
+
+  <!-- Mobile Top Header -->
+  <header class="bg-[#0E1218] border border-[#1C222D] rounded-lg p-3 mb-3 flex items-center justify-between shadow-lg sticky top-1 z-30">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded bg-[#161C26] border border-[#263143] flex items-center justify-center text-[#00E5FF]">
+        <span class="material-symbols-outlined text-lg">tune</span>
+      </div>
+      <div>
+        <h1 class="font-hud font-bold text-xs tracking-wider text-white uppercase">RESCUE ROVER C2</h1>
+        <div class="text-[10px] font-mono text-[#707E94] flex items-center gap-1.5">
+          <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="sync-status" class="text-emerald-400">REMOTE OVERRIDE CONNECTED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Return to HUD Link -->
+    <a href="/" class="px-2.5 py-1.5 rounded bg-[#161D27] border border-[#263242] text-[11px] font-mono text-cyan-400 flex items-center gap-1">
+      <span class="material-symbols-outlined text-sm">monitor</span>
+      <span>HUD</span>
+    </a>
+  </header>
+
+  <!-- Quick Scenario Presets -->
+  <section class="bg-[#0E1218] border border-[#1C222D] rounded-lg p-3 mb-3 shadow-md">
+    <div class="text-[11px] font-mono text-[#707E94] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-xs text-amber-400">bolt</span>
+      <span>QUICK DEMO PRESETS</span>
+    </div>
+    <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+      <button id="btn-preset-nominal" class="p-2.5 rounded bg-[#131A24] border border-[#232F42] text-emerald-400 hover:border-emerald-400 active:scale-95 transition-all text-left">
+        <strong class="block text-white">NOMINAL SAFE</strong>
+        <span class="text-[10px] text-[#707E94]">Normal levels</span>
+      </button>
+
+      <button id="btn-preset-gas" class="p-2.5 rounded bg-amber-950/30 border border-amber-800/60 text-amber-400 hover:border-amber-400 active:scale-95 transition-all text-left">
+        <strong class="block text-amber-200">GAS LEAK SPIKE</strong>
+        <span class="text-[10px] text-amber-400/80">CO 78ppm (Critical)</span>
+      </button>
+
+      <button id="btn-preset-collapse" class="p-2.5 rounded bg-red-950/30 border border-red-800/60 text-red-400 hover:border-red-400 active:scale-95 transition-all text-left">
+        <strong class="block text-red-200">COLLAPSE / SOS</strong>
+        <span class="text-[10px] text-red-400/80">Tremor 0.52G + SOS</span>
+      </button>
+
+      <button id="btn-preset-water" class="p-2.5 rounded bg-blue-950/30 border border-blue-800/60 text-cyan-400 hover:border-cyan-400 active:scale-95 transition-all text-left">
+        <strong class="block text-cyan-200">WATER INGRESS</strong>
+        <span class="text-[10px] text-cyan-400/80">Float switch active</span>
+      </button>
+    </div>
+
+    <!-- Standby Reset Button -->
+    <button id="btn-reset-standby" class="w-full mt-2 p-2 rounded bg-[#161C24] border border-[#2B384C] text-gray-300 font-mono text-xs hover:border-gray-400 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+      <span class="material-symbols-outlined text-sm">power_settings_new</span>
+      <span>RESET TO IDLE STANDBY (WAITING FOR SENSORS)</span>
+    </button>
+  </section>
+
+  <!-- Hazard / Alarm Toggles -->
+  <section class="bg-[#0E1218] border border-[#1C222D] rounded-lg p-3 mb-3 shadow-md">
+    <div class="text-[11px] font-mono text-[#707E94] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-xs text-red-400">warning</span>
+      <span>HAZARD & ALARM TOGGLES</span>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <!-- SOS Toggle -->
+      <button id="toggle-sos" class="p-3 rounded bg-[#131A24] border border-[#232F42] text-left active:scale-95 transition-all flex flex-col justify-between min-h-[70px]">
+        <div class="text-[10px] font-mono text-[#707E94]">ACOUSTIC CADENCE</div>
+        <div class="font-mono text-sm font-bold text-gray-300" id="label-sos-state">SOS KNOCK: OFF</div>
+      </button>
+
+      <!-- Water Ingress Toggle -->
+      <button id="toggle-water" class="p-3 rounded bg-[#131A24] border border-[#232F42] text-left active:scale-95 transition-all flex flex-col justify-between min-h-[70px]">
+        <div class="text-[10px] font-mono text-[#707E94]">FLOAT PROBE</div>
+        <div class="font-mono text-sm font-bold text-gray-300" id="label-water-state">WATER: DRY</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- Real Sensor Sliders -->
+  <section class="space-y-3">
+    
+    <!-- 1. Toxic & Flammable Gases -->
+    <div class="bg-[#0E1218] border border-[#1C222D] rounded-lg p-3 shadow-md">
+      <div class="text-[11px] font-mono text-amber-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-xs">air</span>
+          <span>GAS CONCENTRATIONS</span>
+        </span>
+      </div>
+
+      <div class="space-y-4">
+        <!-- CO -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">CARBON MONOXIDE (CO)</span>
+            <span id="badge-co" class="font-bold text-amber-400">2.0 ppm</span>
+          </div>
+          <input type="range" id="slider-co" min="0" max="100" step="0.5" value="2.0" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span>0 ppm (Clean)</span>
+            <span class="text-red-400">Warn &gt; 35 ppm</span>
+            <span>100 ppm (Lethal)</span>
+          </div>
+        </div>
+
+        <!-- CH4 -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">METHANE (CH₄)</span>
+            <span id="badge-ch4" class="font-bold text-yellow-400">0.4 %</span>
+          </div>
+          <input type="range" id="slider-ch4" min="0" max="5.0" step="0.05" value="0.4" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span>0.0%</span>
+            <span class="text-yellow-400">LEL Warn &gt; 1.0%</span>
+            <span>5.0%</span>
+          </div>
+        </div>
+
+        <!-- O2 -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">OXYGEN (O₂)</span>
+            <span id="badge-o2" class="font-bold text-cyan-400">20.9 %</span>
+          </div>
+          <input type="range" id="slider-o2" min="15.0" max="25.0" step="0.1" value="20.9" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span class="text-red-400">15.0% (Hypoxia)</span>
+            <span class="text-cyan-400">20.9% (Air)</span>
+            <span>25.0%</span>
+          </div>
+        </div>
+
+        <!-- CO2 -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">CARBON DIOXIDE (CO₂)</span>
+            <span id="badge-co2" class="font-bold text-cyan-300">450 ppm</span>
+          </div>
+          <input type="range" id="slider-co2" min="300" max="3000" step="25" value="450" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Motion, Gyro & Seismic -->
+    <div class="bg-[#0E1218] border border-[#1C222D] rounded-lg p-3 shadow-md">
+      <div class="text-[11px] font-mono text-cyan-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-xs">screen_rotation</span>
+          <span>MPU-6050 & SEISMIC MOTION</span>
+        </span>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Pitch -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">PITCH INCLINE</span>
+            <span id="badge-pitch" class="font-bold text-cyan-400">0.0°</span>
+          </div>
+          <input type="range" id="slider-pitch" min="-45" max="45" step="0.5" value="0.0" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span>-45° (Downhill)</span>
+            <span>0° (Level)</span>
+            <span>+45° (Uphill)</span>
+          </div>
+        </div>
+
+        <!-- Roll -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">ROLL TILT</span>
+            <span id="badge-roll" class="font-bold text-cyan-400">0.0°</span>
+          </div>
+          <input type="range" id="slider-roll" min="-45" max="45" step="0.5" value="0.0" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span>-45° (Left)</span>
+            <span>0° (Level)</span>
+            <span>+45° (Right)</span>
+          </div>
+        </div>
+
+        <!-- Tremor -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">SEISMIC TREMOR</span>
+            <span id="badge-tremor" class="font-bold text-yellow-400">0.02 G</span>
+          </div>
+          <input type="range" id="slider-tremor" min="0.00" max="1.00" step="0.01" value="0.02" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span>0.00 G (Stable)</span>
+            <span class="text-red-400">Warn &gt; 0.30 G</span>
+            <span>1.00 G (Collapse)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Forward Obstacle & Environment -->
+    <div class="bg-[#0E1218] border border-[#1C222D] rounded-lg p-3 shadow-md">
+      <div class="text-[11px] font-mono text-emerald-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-xs">sensors</span>
+          <span>DISTANCE & AMBIENT SENSORS</span>
+        </span>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Distance -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">FORWARD OBSTACLE DISTANCE</span>
+            <span id="badge-dist" class="font-bold text-emerald-400">12.0 m</span>
+          </div>
+          <input type="range" id="slider-dist" min="0.2" max="20.0" step="0.1" value="12.0" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span class="text-red-400">0.2 m (Collision)</span>
+            <span>10.0 m</span>
+            <span>20.0 m (Clear)</span>
+          </div>
+        </div>
+
+        <!-- Temperature -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">AMBIENT TEMPERATURE</span>
+            <span id="badge-temp" class="font-bold text-white">24.5 °C</span>
+          </div>
+          <input type="range" id="slider-temp" min="-10" max="60" step="0.5" value="24.5" />
+          <div class="flex justify-between text-[9px] font-mono text-[#707E94] mt-0.5">
+            <span>-10 °C</span>
+            <span>24 °C (Room)</span>
+            <span>60 °C (Fire)</span>
+          </div>
+        </div>
+
+        <!-- Humidity -->
+        <div>
+          <div class="flex justify-between items-center text-xs font-mono mb-1">
+            <span class="text-gray-300">RELATIVE HUMIDITY</span>
+            <span id="badge-humidity" class="font-bold text-cyan-400">45 %</span>
+          </div>
+          <input type="range" id="slider-humidity" min="5" max="100" step="1" value="45" />
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <script type="module" src="js/controller.js"></script>
+</body>
+</html>

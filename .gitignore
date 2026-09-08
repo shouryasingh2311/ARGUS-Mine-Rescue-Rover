@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Debug artifacts
+*.log
+live_stream_frame.jpg
+crop_camera.png
+test_frame.jpg
+
+# Model weights are large — tracked via Git LFS or committed directly
+# best.pt

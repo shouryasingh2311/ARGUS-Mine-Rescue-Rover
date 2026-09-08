@@ -1,0 +1,292 @@
+@charset "UTF-8";
+/**
+ * @file styles.css
+ * @description Military Tactical Cockpit HUD stylesheet for RESCUE ROVER C2 - ALPHA-1.
+ * Features: High-density data grid, CRT scanlines, glassmorphic panels, glowing reticles, HUD borders.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+  --bg-slate: #0A0B0E;
+  --panel-bg: #12151B;
+  --panel-border: #1C222D;
+  --panel-border-hover: #2A3547;
+  --amber: #FF9800;
+  --amber-glow: rgba(255, 152, 0, 0.25);
+  --emergency-red: #F44336;
+  --red-glow: rgba(244, 67, 54, 0.35);
+  --cyan: #00E5FF;
+  --cyan-glow: rgba(0, 229, 255, 0.25);
+  --neon-green: #00E676;
+  --green-glow: rgba(0, 230, 118, 0.35);
+  --text-dim: #707E94;
+  --text-light: #E1E7EF;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-hud: 'Orbitron', sans-serif;
+  --font-display: 'Rajdhani', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  background-color: var(--bg-slate);
+  color: var(--text-light);
+  font-family: var(--font-display);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100vh;
+  max-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Monospace Readouts */
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.font-hud {
+  font-family: var(--font-hud);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* CRT Scanline & Tactical Vignette Overlay */
+.tactical-scanlines {
+  position: relative;
+}
+
+.tactical-scanlines::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+  background-size: 100% 3px;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.tactical-vignette {
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.85);
+}
+
+/* Tactical Card Panels */
+.hud-panel {
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.hud-panel:hover {
+  border-color: var(--panel-border-hover);
+}
+
+/* Tactical Corner Brackets */
+.hud-corner-brackets::before,
+.hud-corner-brackets::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+}
+
+.hud-corner-brackets::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--amber);
+  border-left: 2px solid var(--amber);
+}
+
+.hud-corner-brackets::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--amber);
+  border-right: 2px solid var(--amber);
+}
+
+.hud-corner-cyan::before {
+  border-top-color: var(--cyan);
+  border-left-color: var(--cyan);
+}
+.hud-corner-cyan::after {
+  border-bottom-color: var(--cyan);
+  border-right-color: var(--cyan);
+}
+
+/* Glowing text effects */
+.glow-amber {
+  text-shadow: 0 0 8px var(--amber-glow);
+}
+
+.glow-cyan {
+  text-shadow: 0 0 8px var(--cyan-glow);
+}
+
+.glow-red {
+  text-shadow: 0 0 8px var(--red-glow);
+}
+
+.glow-green {
+  text-shadow: 0 0 8px var(--green-glow);
+}
+
+/* Tactical Reticle Borders & Grid Lines */
+.hud-grid-pattern {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(28, 34, 45, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(28, 34, 45, 0.5) 1px, transparent 1px);
+}
+
+/* Pulsing Status Badges */
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.75; box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.6); }
+  70% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 6px rgba(0, 230, 118, 0); }
+  100% { transform: scale(0.9); opacity: 0.75; box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+}
+
+.pulse-online {
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-emergency {
+  0%, 100% {
+    background-color: rgba(244, 67, 54, 0.2);
+    border-color: rgba(244, 67, 54, 0.9);
+    box-shadow: 0 0 16px rgba(244, 67, 54, 0.6);
+  }
+  50% {
+    background-color: rgba(244, 67, 54, 0.05);
+    border-color: rgba(244, 67, 54, 0.4);
+    box-shadow: 0 0 4px rgba(244, 67, 54, 0.2);
+  }
+}
+
+.alert-flash-red {
+  animation: pulse-emergency 0.8s infinite ease-in-out;
+}
+
+@keyframes rec-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.rec-strobe {
+  animation: rec-blink 1s infinite steps(1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0B0E;
+}
+::-webkit-scrollbar-thumb {
+  background: #1C222D;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--amber);
+}
+
+/* Active Warning Border Transitions */
+.warning-border {
+  border-color: var(--emergency-red) !important;
+  box-shadow: 0 0 12px var(--red-glow);
+}
+
+/* Buttons and Tactical Controls */
+.hud-btn {
+  background: #171C24;
+  border: 1px solid #232B38;
+  color: var(--text-light);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-btn:hover {
+  background: #1F2633;
+  border-color: var(--amber);
+  color: #FFF;
+  box-shadow: 0 0 10px var(--amber-glow);
+}
+
+.hud-btn:active {
+  transform: translateY(1px);
+}
+
+.hud-btn-active {
+  background: rgba(255, 152, 0, 0.15);
+  border-color: var(--amber);
+  color: var(--amber);
+  box-shadow: 0 0 12px var(--amber-glow);
+}
+
+.hud-btn-cyan {
+  border-color: rgba(0, 229, 255, 0.4);
+  color: var(--cyan);
+}
+.hud-btn-cyan:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+/* Tooltips */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0B0E14;
+  border: 1px solid var(--panel-border-hover);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 50;
+}
+[data-tooltip]:hover::before {
+  opacity: 1;
+}
+
+/* Compass & Dials */
+.cockpit-dial-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Blueprint Line Styling */
+.blueprint-grid {
+  background-color: #0d1117;
+  background-image: radial-gradient(rgba(0, 229, 255, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}

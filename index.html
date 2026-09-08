@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-screen overflow-hidden">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RESCUE ROVER C2 - ALPHA-1 // TACTICAL COMMAND CENTER</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            tacticalBg: '#0A0B0E',
+            panelBg: '#12151B',
+            panelBorder: '#1C222D',
+            panelBorderHover: '#2A3547',
+            amberAccent: '#FF9800',
+            emergencyRed: '#F44336',
+            cyanReadout: '#00E5FF',
+            neonGreen: '#00E676',
+            textDim: '#707E94',
+            textLight: '#E1E7EF',
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'monospace'],
+            hud: ['Orbitron', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Tactical Cockpit HUD Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="bg-[#0A0B0E] text-[#E1E7EF] h-screen max-h-screen overflow-hidden flex flex-col font-display antialiased selection:bg-amber-500 selection:text-black tactical-scanlines">
+
+  <!-- ========================================================================= -->
+  <!-- TOP HEADER BAR (COMPACT COMMAND HUD STRIP)                                -->
+  <!-- ========================================================================= -->
+  <header class="bg-[#0c0f14] border-b border-[#1C222D] flex-shrink-0 px-4 py-1.5 flex items-center justify-between shadow-lg">
+    
+    <!-- Left: Brand & Rover Identity -->
+    <div class="flex items-center gap-3">
+      <div class="w-6 h-6 rounded bg-[#161C26] border border-[#263143] flex items-center justify-center text-[#FF9800] shadow-[0_0_10px_rgba(255,152,0,0.3)]">
+        <span class="material-symbols-outlined text-sm">precision_manufacturing</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <h1 class="font-hud font-black text-xs tracking-wider text-white uppercase">RESCUE ROVER ALPHA-1</h1>
+        <span class="text-[8px] font-mono text-[#00E5FF] px-1 py-0.5 rounded bg-cyan-950/60 border border-cyan-800">C2 COMMAND</span>
+      </div>
+    </div>
+
+    <!-- Center: Hardware Stream Status Badge -->
+    <div class="flex items-center gap-2">
+      <div id="status-stream-badge" class="flex items-center gap-2 px-3 py-0.5 rounded bg-[#10141C] border border-[#232D3D] text-[10px] font-mono">
+        <span id="status-dot" class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+        <span id="status-text" class="text-amber-400 font-semibold tracking-wide">IDLE // AWAITING SENSORS</span>
+      </div>
+    </div>
+
+    <!-- Right: Quick Controls, Remote Link & UTC Clock -->
+    <div class="flex items-center gap-2">
+      
+      <!-- Camera Toggle -->
+      <button id="btn-cam-toggle" class="hud-btn px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 text-gray-300 hover:text-white" title="Toggle Webcam / Synthetic feed (Shortcut: C)">
+        <span class="material-symbols-outlined text-xs text-amber-400">sync_alt</span>
+        <span>CAM</span>
+      </button>
+
+      <!-- Audio Mute -->
+      <button id="btn-audio-mute" class="hud-btn p-0.5 px-2 rounded text-[10px] flex items-center gap-1" title="Toggle Audio (Shortcut: M)">
+        <span class="material-symbols-outlined text-xs text-gray-400">volume_off</span>
+        <span class="font-mono text-gray-400">MUTE</span>
+      </button>
+
+      <!-- Mobile Controller Direct Link -->
+      <a href="/controller.html" target="_blank" class="hud-btn hud-btn-cyan px-2 py-0.5 rounded text-[10px] font-mono flex items-center gap-1 text-cyan-400 border-cyan-800/80 bg-cyan-950/40" title="Open Mobile Manual Override Controller in separate tab">
+        <span class="material-symbols-outlined text-xs">smartphone</span>
+        <span class="hidden sm:inline">MOBILE OVERRIDE</span>
+      </a>
+
+      <!-- Live Clock -->
+      <div class="text-[10px] font-mono text-cyan-400 font-bold px-2 py-0.5 rounded bg-[#090C10] border border-[#18202C]">
+        <span id="live-clock">--:--:-- UTC</span>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN ZERO-SCROLL COMMAND CENTER (FIT 100% TO SCREEN VIEWPORT)             -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 min-h-0 p-2 w-full grid grid-cols-12 gap-2 overflow-hidden">
+    
+    <!-- ======================================================================= -->
+    <!-- LEFT REGION: OPTICAL FEED & SPATIAL BLUEPRINT (COLS 1-8, HORIZONTAL 50/50)-->
+    <!-- ======================================================================= -->
+    <div class="col-span-8 grid grid-cols-2 gap-2 min-h-0 h-full overflow-hidden">
+      
+      <!-- 1. Live Camera Feed Panel (Left 50% of Region) -->
+      <section class="hud-panel rounded-lg border border-[#1C222D] hud-corner-brackets flex flex-col overflow-hidden relative min-h-0 h-full">
+        
+        <!-- Camera Header Strip with Manual Feed Adjustment Sliders -->
+        <div class="px-2 py-1 border-b border-[#1C222D] bg-[#0E1217] flex items-center justify-between flex-shrink-0 gap-1.5 overflow-hidden">
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="material-symbols-outlined text-[#FF9800] text-xs">videocam</span>
+            <span class="font-hud font-bold text-[10px] uppercase tracking-wider text-white">VIDEO FEED</span>
+            <span id="worker-count-badge" class="hidden text-[9px] font-mono text-amber-400 bg-amber-950/40 px-1 py-0.5 rounded border border-amber-800/60 font-bold">
+              0 WORKERS
+            </span>
+          </div>
+
+          <!-- Tactical Manual Feed Adjuster Sliders -->
+          <div class="flex items-center gap-1.5 text-[8px] font-mono bg-[#0A0D12] px-1.5 py-0.5 rounded border border-[#1A2230] flex-shrink-0">
+            <!-- Original Ratio 1.0x Button -->
+            <button id="btn-cam-reset" class="px-1 py-0.5 rounded text-[8px] font-mono font-bold text-gray-300 hover:text-cyan-400 bg-[#121722] border border-[#222E40] hover:border-cyan-500/70 transition-colors" title="Reset to Original 1.0x Native Aspect Ratio">
+              1.0x ORIG
+            </button>
+
+            <!-- Zoom / Scale Slider -->
+            <div class="flex items-center gap-1" title="Adjust Camera Scale / Zoom (0.5x to 1.8x)">
+              <span class="text-gray-400 text-[8px]">SCALE:</span>
+              <input type="range" id="cam-slider-zoom" min="0.5" max="1.8" step="0.05" value="1.0" class="w-10 h-1 bg-[#1C2534] rounded appearance-none cursor-pointer accent-[#00E5FF]">
+              <span id="cam-val-zoom" class="text-cyan-400 text-[8px] font-bold">1.0x</span>
+            </div>
+
+            <!-- Brightness Slider -->
+            <div class="flex items-center gap-1" title="Adjust Feed Exposure / Brightness (50% to 180%)">
+              <span class="text-gray-400 text-[8px]">LUM:</span>
+              <input type="range" id="cam-slider-bright" min="50" max="180" step="5" value="100" class="w-10 h-1 bg-[#1C2534] rounded appearance-none cursor-pointer accent-[#FF9800]">
+              <span id="cam-val-bright" class="text-amber-400 text-[8px] font-bold">100%</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1 text-[9px] font-mono text-red-400 rec-strobe flex-shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+            <span class="font-bold">[● REC]</span>
+          </div>
+        </div>
+
+        <!-- Camera Container with Video / Procedural FLIR Canvas & Reticle Canvas -->
+        <div class="relative flex-1 w-full bg-black flex items-center justify-center overflow-hidden min-h-0">
+          <!-- Real Webcam Video Container (Fallback) -->
+          <video id="webcam" autoplay muted playsinline class="max-w-full max-h-full object-contain origin-center transition-transform duration-75 hidden"></video>
+
+          <!-- Python Live MJPEG Stream (Preserving original aspect ratio & GPU composited) -->
+          <img id="mjpeg-stream" class="max-w-full max-h-full object-contain origin-center transform-gpu will-change-transform" alt="YOLO Live Stream" />
+
+          <!-- Procedural Night-Vision / FLIR Synthetic Crawler Canvas (Fallback) -->
+          <canvas id="synth-camera" class="absolute inset-0 w-full h-full hidden pointer-events-none"></canvas>
+
+          <!-- HUD Overlays Canvas -->
+          <canvas id="overlay-camera" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
+        </div>
+
+        <!-- Camera Footer Strip -->
+        <div class="px-2 py-0.5 bg-[#0D1016] border-t border-[#1C222D] flex items-center justify-between text-[9px] font-mono text-[#707E94] flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span>FEED: <strong class="text-emerald-400 font-bold">LIVE</strong></span>
+          </div>
+          <div class="flex items-center gap-1.5 text-cyan-400/70 text-[8px]">
+            <span class="material-symbols-outlined text-[10px]">sensors</span>
+            <span>TACTICAL OPTICS</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Thermal & Gas Spatial Heat Map (Right 50% of Region) -->
+      <section class="hud-panel rounded-lg border border-[#1C222D] hud-corner-brackets hud-corner-cyan flex flex-col overflow-hidden min-h-0 h-full">
+        
+        <!-- Header Strip -->
+        <div class="px-2 py-1 border-b border-[#1C222D] bg-[#0E1217] flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#00E5FF] text-xs">layers</span>
+            <span class="font-hud font-bold text-[10px] uppercase tracking-wider text-white">SPATIAL GAS MAP // SECTOR A1</span>
+          </div>
+          <div class="flex items-center gap-3 text-[9px] font-mono">
+            <span class="text-amber-400 font-bold">CH₄ + CO + CO₂ PLUMES</span>
+          </div>
+        </div>
+
+        <!-- Tactical Blueprint Canvas -->
+        <div class="relative flex-1 w-full bg-[#0A0D12] overflow-hidden min-h-0">
+          <canvas id="canvas-heatmap" class="w-full h-full block"></canvas>
+        </div>
+
+        <!-- Heatmap Legend Strip -->
+        <div class="px-2 py-0.5 bg-[#0D1016] border-t border-[#1C222D] flex items-center justify-between text-[8px] font-mono text-[#707E94] flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span> CH₄</span>
+            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> CO</span>
+            <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span> CO₂</span>
+          </div>
+          <div class="text-gray-400">
+            SECTOR: <span class="text-cyan-400 font-bold">COLLAPSED WING</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- RIGHT COLUMN: SENSOR TELEMETRY & GAUGES (COLS 9-12)                     -->
+    <!-- ======================================================================= -->
+    <div class="col-span-4 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+      
+      <!-- 1. Acoustic Monitoring & SOS Alert -->
+      <section class="hud-panel rounded-lg border border-[#1C222D] hud-corner-brackets p-2 flex flex-col justify-between flex-shrink-0">
+        <div class="flex items-center justify-between border-b border-[#1C222D] pb-1 mb-1">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[#00E5FF] text-xs">graphic_eq</span>
+            <span class="font-hud font-bold text-[9px] uppercase tracking-wider text-white">ACOUSTIC FREQUENCY</span>
+          </div>
+          <span class="text-[8px] font-mono text-cyan-400 font-bold">FFT</span>
+        </div>
+
+        <!-- Animated FFT Bars Canvas -->
+        <div class="h-10 w-full bg-[#090C10] rounded border border-[#18202C] overflow-hidden relative mb-1">
+          <canvas id="canvas-fft" class="w-full h-full block"></canvas>
+        </div>
+
+        <!-- Acoustic Status Alert Banner -->
+        <div id="banner-acoustic-alert" class="flex items-center justify-between p-0.5 px-2 rounded bg-[#0B0E14] border border-[#1E2633] text-[#707E94] font-mono text-[9px]">
+          <span class="flex items-center gap-1.5">
+            <span class="w-1 h-1 rounded-full bg-gray-600"></span>
+            <span>ACOUSTIC: STANDBY</span>
+          </span>
+          <span class="text-[8px] text-gray-500">IDLE</span>
+        </div>
+      </section>
+
+      <!-- 2. Stability & Gyro (Dual Horizon Dials) -->
+      <section class="hud-panel rounded-lg border border-[#1C222D] hud-corner-brackets p-2 flex flex-col justify-between flex-shrink-0">
+        <div class="flex items-center justify-between border-b border-[#1C222D] pb-1 mb-1">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[#00E5FF] text-xs">screen_rotation</span>
+            <span class="font-hud font-bold text-[9px] uppercase tracking-wider text-white">STABILITY (MPU-6050)</span>
+          </div>
+          <div id="container-tremor" class="text-[8px] font-mono text-cyan-400 font-bold px-1.5 py-0.5 rounded bg-[#0A0D12] border border-[#1E2633]">
+            <span id="readout-tremor">TREMOR: -- G</span>
+          </div>
+        </div>
+
+        <!-- Dual Dials Grid -->
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Left Dial: PITCH -->
+          <div class="bg-[#090C10] p-1 rounded border border-[#18202C] flex flex-col items-center">
+            <div class="text-[8px] font-mono text-[#707E94] mb-0.5 font-bold">PITCH</div>
+            <div class="w-full aspect-square max-w-[90px] relative">
+              <canvas id="canvas-pitch-dial" class="cockpit-dial-canvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Right Dial: ROLL -->
+          <div class="bg-[#090C10] p-1 rounded border border-[#18202C] flex flex-col items-center">
+            <div class="text-[8px] font-mono text-[#707E94] mb-0.5 font-bold">ROLL</div>
+            <div class="w-full aspect-square max-w-[90px] relative">
+              <canvas id="canvas-roll-dial" class="cockpit-dial-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Forward Obstacle Distance (ToF / Ultrasonic) -->
+      <section class="hud-panel rounded-lg border border-[#1C222D] hud-corner-brackets p-2 flex flex-col justify-between flex-shrink-0">
+        <div class="flex items-center justify-between border-b border-[#1C222D] pb-1 mb-1">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[#FF9800] text-xs">sensors</span>
+            <span class="font-hud font-bold text-[9px] uppercase tracking-wider text-white">DISTANCE SENSOR</span>
+          </div>
+          <div class="flex items-center gap-2 text-[9px] font-mono">
+            <span id="readout-dist-front" class="text-cyan-400 font-bold">-- m</span>
+            <span id="readout-incline" class="text-amber-400 font-bold">--°</span>
+          </div>
+        </div>
+
+        <!-- Distance Graph Canvas -->
+        <div class="h-12 w-full bg-[#090C10] rounded border border-[#18202C] overflow-hidden relative">
+          <canvas id="canvas-topography" class="w-full h-full block"></canvas>
+        </div>
+      </section>
+
+      <!-- 4. Environmental Data Cards & Water Sensor (Flex-1) -->
+      <section class="hud-panel rounded-lg border border-[#1C222D] hud-corner-brackets p-2 flex flex-col justify-between flex-1 min-h-0 overflow-hidden">
+        <div class="flex items-center justify-between border-b border-[#1C222D] pb-1 mb-1 flex-shrink-0">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[#00E676] text-xs">nest_thermostat_gen_3</span>
+            <span class="font-hud font-bold text-[9px] uppercase tracking-wider text-white">ENVIRONMENTAL</span>
+          </div>
+          <span class="text-[8px] font-mono text-[#707E94]">SENSOR HUB</span>
+        </div>
+
+        <!-- 2x2 Tactical Tiles -->
+        <div class="grid grid-cols-2 gap-1.5 font-mono flex-1 min-h-0 my-0.5">
+          
+          <!-- Tile 1: O2 LEVEL -->
+          <div class="p-1.5 rounded bg-[#0A0D12] border border-[#1C222D] flex flex-col justify-between">
+            <div class="text-[8px] text-[#707E94] flex items-center justify-between">
+              <span>O₂</span>
+              <span class="text-cyan-400">ATM</span>
+            </div>
+            <div id="val-o2" class="text-base font-bold text-cyan-400 glow-cyan">-- %</div>
+            <div class="text-[7px] text-[#707E94]">SAFE: 19.5-23.5%</div>
+          </div>
+
+          <!-- Tile 2: CO LEVEL -->
+          <div id="card-co" class="p-1.5 rounded bg-[#0A0D12] border border-[#1C222D] flex flex-col justify-between transition-all">
+            <div class="text-[8px] text-[#707E94] flex items-center justify-between">
+              <span>CO</span>
+              <span class="text-amber-400">35ppm</span>
+            </div>
+            <div id="val-co" class="text-base font-bold text-amber-400 glow-amber">-- ppm</div>
+            <div class="text-[7px] text-[#707E94]">CARBON MONOXIDE</div>
+          </div>
+
+          <!-- Tile 3: TEMP EXTERNAL -->
+          <div class="p-1.5 rounded bg-[#0A0D12] border border-[#1C222D] flex flex-col justify-between">
+            <div class="text-[8px] text-[#707E94]">TEMP</div>
+            <div id="val-temp" class="text-base font-bold text-white">-- °C</div>
+            <div class="text-[7px] text-[#707E94]">AMBIENT</div>
+          </div>
+
+          <!-- Tile 4: HUMIDITY -->
+          <div class="p-1.5 rounded bg-[#0A0D12] border border-[#1C222D] flex flex-col justify-between">
+            <div class="text-[8px] text-[#707E94]">HUMIDITY</div>
+            <div id="val-humidity" class="text-base font-bold text-cyan-400">-- %</div>
+            <div class="text-[7px] text-[#707E94]">RH</div>
+          </div>
+
+        </div>
+
+        <!-- Water / Flood Float Switch -->
+        <div id="banner-water-detection" class="flex-shrink-0 mt-0.5">
+          <div class="flex items-center justify-between p-1 rounded bg-[#0b0e14] border border-[#1c2432] text-[#707E94] font-mono text-[8px]">
+            <span class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+              <span>FLOAT SWITCH: STANDBY</span>
+            </span>
+            <span class="text-gray-500 font-mono">STANDBY</span>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- COMPACT FOOTER TICKER STRIP                                               -->
+  <!-- ========================================================================= -->
+  <footer class="bg-[#080B0F] border-t border-[#1C222D] py-0.5 px-4 text-[9px] font-mono text-[#707E94] flex-shrink-0 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <span class="text-cyan-400 font-bold">RESCUE ROVER C2 ALPHA-1</span>
+      <span class="hidden sm:inline text-gray-600">|</span>
+      <span class="hidden sm:inline">SSE: <span class="text-amber-400">/events</span></span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span>KEYBOARD: <strong class="text-white">[M]</strong> AUDIO <strong class="text-white">[C]</strong> CAM</span>
+    </div>
+  </footer>
+
+  <!-- Clock updater script -->
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const el = document.getElementById('live-clock');
+      if (el) el.textContent = now.toTimeString().split(' ')[0] + ' UTC';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+
+  <!-- Main Application Entry (ES Module) -->
+  <script type="module" src="js/app.js?v=3.0"></script>
+</body>
+</html>
